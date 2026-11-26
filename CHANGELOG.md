@@ -14,7 +14,7 @@ Format mengikuti Keep a Changelog. Hanya mencatat perubahan yang benar-benar ter
 - `docs/screenshots/` berisi tangkapan layar tiap halaman.
 - Prompt iterasi ke agent: 1 (pembuatan awal). Perbaikan setelah hasil pertama: 0.
 
-### Asumsi yang diambil pada bagian [PERLU DIKONFIRMASI]
+### Asumsi yang diambil pada bagian yang belum pasti
 - Biaya admin: Rp 0 ke Bank BRI, Rp 2.500 ke bank lain. Nominal minimum Rp 10.000. Saldo contoh Rp 12.450.000.
 - Riwayat transaksi (FR-06) dibuat (masuk scope), berisi 2 transaksi contoh ditambah transaksi baru dari sesi berjalan.
 - Hasil simulasi (berhasil/belum pasti) dipilih lewat pilihan di layar Verifikasi, karena PRD tidak menentukan pemicunya.
@@ -26,8 +26,13 @@ Format mengikuti Keep a Changelog. Hanya mencatat perubahan yang benar-benar ter
 
 ### Keterbatasan eksperimen
 - Aplikasi ini dibuat oleh agen yang sama dengan penyusun dokumen UX pada percakapan yang sama, sehingga isolasi dari UX Skill tidak sempurna. Interpretasi hasil perbandingan harus mempertimbangkan hal ini.
-- Waktu pengembangan dan jam mulai/selesai: [PERLU DIKONFIRMASI] (dicatat penulis).
+- Waktu pengembangan: tidak dicatat dengan jam mulai/selesai; sesi pembuatan berlangsung pada 2026-11-26 hingga 2026-11-27.
+
+### Diperbarui (dokumen v1.1, 2026-11-27)
+- Seluruh tanda yang sebelumnya menandai informasi belum pasti telah diputuskan penulis dan diisi di PRD, README, dan (pada repo B) AGENTS.md serta UX-Skill. Keputusan mengikuti Worksheet 1–8: wawancara tetap berstatus simulasi, riwayat masuk scope (User Story 5), biaya dan batas nominal ditulis sebagai asumsi proyek akademik.
+- Catatan: aplikasi pada src/ dibangun dari dokumen v1.0. Perubahan v1.1 menyelaraskan teks dengan keputusan yang sudah dipakai aplikasi dan tidak mengubah kodenya.
+- Tanggal unggah ke GitHub: 2026-11-27. Demo GitHub Pages aktif pada hari yang sama.
 
 ### Belum dikerjakan
 - Deployment.
-- Tanggal commit dan iterasi prompting AI coding agent: [PERLU DIKONFIRMASI] (catat setiap iterasi di sini saat dikerjakan).
+- Pengujian pada pengguna nyata dan usability test.
