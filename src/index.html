@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Konfirmasi Transfer — Eksperimen A (PRD Only)</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#e9edf2;color:#1a1a1a;display:flex;justify-content:center}
+#app{width:100%;max-width:420px;min-height:100vh;background:#f5f7fa;display:flex;flex-direction:column}
+header{background:#0b5cad;color:#fff;padding:14px 16px}
+header small{display:block;opacity:.85;font-size:11px;margin-top:2px}
+main{flex:1;padding:16px}
+h2{margin:0 0 12px;font-size:18px}
+.card{background:#fff;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+label{display:block;font-size:13px;margin:10px 0 4px;color:#444}
+input,select{width:100%;padding:10px;border:1px solid #bbb;border-radius:8px;font-size:15px}
+button{font-size:15px;padding:12px;border-radius:8px;border:0;cursor:pointer;width:100%;margin-top:8px}
+.p{background:#0b5cad;color:#fff}.s{background:#fff;color:#0b5cad;border:1px solid #0b5cad}
+button:disabled{background:#b8c4d2;color:#fff;cursor:not-allowed}
+.row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #eee;font-size:14px}
+.row:last-child{border:0}.row b{text-align:right}
+.big{font-size:30px;font-weight:700;color:#0b5cad;margin:6px 0}
+.name{font-size:20px;font-weight:700}
+.ok{color:#12803c}.warn{color:#a15c00}.err{color:#b3261e;font-size:13px}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.note{font-size:12px;color:#666;margin-top:10px}
+.found{background:#e8f3ff;border-radius:8px;padding:8px 10px;margin-top:8px;font-size:14px}
+.hist{width:100%;text-align:left;background:#fff;border:1px solid #e1e5ea;display:flex;justify-content:space-between;color:#1a1a1a}
+</style>
+</head>
+<body>
+<div id="app">
+ <header><b>Transfer BRImo (konsep)</b><small>Konsep terinspirasi BRImo — bukan aplikasi resmi BRI. Data contoh, tanpa transaksi nyata.</small></header>
+ <main id="view"></main>
+</div>
+<script>
+const rp=n=>'Rp '+Number(n).toLocaleString('id-ID');
+const ACCOUNTS={'123456789012345':{name:'ANDI PRATAMA',bank:'Bank BRI'},'9876543210987':{name:'SITI RAHMAWATI',bank:'Bank Mandiri'},'555500001111222':{name:'BUDI SANTOSO',bank:'Bank BRI'}};
+const FEE=bank=>bank==='Bank BRI'?0:2500;
+const MIN=10000, SALDO=12450000;
+let st={acc:'',name:'',bank:'',amount:'',note:'',result:'ok',ref:'',time:''};
+let HIST=[
+ {ref:'TRF-0000000412',name:'SITI RAHMAWATI',bank:'Bank Mandiri',acc:'9876543210987',amount:150000,fee:2500,note:'Bayar kos',time:'20 Nov 2026, 14:05',status:'Berhasil'},
+ {ref:'TRF-0000000398',name:'BUDI SANTOSO',bank:'Bank BRI',acc:'555500001111222',amount:75000,fee:0,note:'Iuran',time:'15 Nov 2026, 09:12',status:'Berhasil'}];
+let page='home',cur=null;
+const v=document.getElementById('view');
+function go(p){page=p;render()}
+function lookup(a){return ACCOUNTS[a.replace(/\D/g,'')]||null}
+function render(){
+ const f={home,tujuan,nominal,konfirmasi,verifikasi,hasil,bukti,riwayat}[page];v.innerHTML='';f();window.scrollTo(0,0);
+}
+function el(h){v.insertAdjacentHTML('beforeend',h)}
+function home(){
+ el(`<div class="card"><div>Saldo Tabungan</div><div class="big">${rp(SALDO)}</div></div>
+ <div class="menu"><button class="p" id="b1">Transfer</button><button class="s" id="b2">Riwayat Transaksi</button></div>
+ <p class="note">Periksa nama penerima, rekening, dan nominal sebelum konfirmasi.</p>`);
+ b1.onclick=()=>{st={acc:'',name:'',bank:'',amount:'',note:'',result:'ok',ref:'',time:''};go('tujuan')};b2.onclick=()=>go('riwayat');
+}
+function tujuan(){
+ el(`<h2>Tujuan Transfer</h2><div class="card"><label for="acc">Nomor rekening tujuan</label>
+ <input id="acc" inputmode="numeric" placeholder="Contoh: 123456789012345" value="${st.acc}">
+ <div id="res"></div><p class="note">Rekening contoh: 123456789012345, 9876543210987, 555500001111222.</p></div>
+ <button class="p" id="nx" disabled>Lanjut</button><button class="s" id="bk">Kembali</button>`);
+ const upd=()=>{const r=lookup(acc.value);
+  if(!acc.value)res.innerHTML='';
+  else if(r){res.innerHTML=`<div class="found">Nama penerima: <b>${r.name}</b><br>${r.bank}</div>`}
+  else res.innerHTML='<div class="err">Rekening tidak ditemukan. Periksa kembali nomor rekening.</div>';
+  nx.disabled=!r};
+ acc.oninput=upd;upd();
+ nx.onclick=()=>{const r=lookup(acc.value);st.acc=acc.value.replace(/\D/g,'');st.name=r.name;st.bank=r.bank;go('nominal')};bk.onclick=()=>go('home');
+}
+function nominal(){
+ el(`<h2>Nominal Transfer</h2><div class="card"><div>Penerima: <b>${st.name}</b> · ${st.bank}</div>
+ <label for="amt">Nominal (Rp)</label><input id="amt" inputmode="numeric" value="${st.amount}" placeholder="Minimal 10000">
+ <div id="err" class="err"></div><label for="nt">Keterangan (opsional)</label><input id="nt" maxlength="40" value="${st.note}"></div>
+ <button class="p" id="nx" disabled>Lanjut</button><button class="s" id="bk">Kembali</button>`);
+ const chk=()=>{const n=+amt.value.replace(/\D/g,'');let m='';
+  if(!n)m='';else if(n<MIN)m='Nominal minimal '+rp(MIN)+'.';else if(n+FEE(st.bank)>SALDO)m='Saldo tidak cukup.';
+  err.textContent=m;nx.disabled=!(n>=MIN&&n+FEE(st.bank)<=SALDO)};
+ amt.oninput=chk;chk();
+ nx.onclick=()=>{st.amount=+amt.value.replace(/\D/g,'');st.note=nt.value;go('konfirmasi')};bk.onclick=()=>{st.amount=amt.value;st.note=nt.value;go('tujuan')};
+}
+function konfirmasi(){
+ const fee=FEE(st.bank);
+ el(`<h2>Konfirmasi Transfer</h2>
+ <div class="card"><div>Nama penerima</div><div class="name">${st.name}</div><div>Nominal</div><div class="big">${rp(st.amount)}</div></div>
+ <div class="card">
+ <div class="row"><span>Nomor rekening</span><b>${st.acc}</b></div>
+ <div class="row"><span>Bank tujuan</span><b>${st.bank}</b></div>
+ <div class="row"><span>Biaya administrasi</span><b>${fee?rp(fee):'Gratis'}</b></div>
+ <div class="row"><span>Keterangan</span><b>${st.note||'-'}</b></div>
+ <div class="row"><span>Total transaksi</span><b>${rp(st.amount+fee)}</b></div></div>
+ <button class="p" id="ok">Konfirmasi</button>
+ <button class="s" id="eacc">Ubah Rekening</button><button class="s" id="eamt">Ubah Nominal</button>`);
+ ok.onclick=()=>go('verifikasi');eacc.onclick=()=>go('tujuan');eamt.onclick=()=>go('nominal');
+}
+function verifikasi(){
+ el(`<h2>Verifikasi (simulasi)</h2><div class="card"><p>Tahap ini hanya simulasi. Tidak ada PIN atau OTP yang diminta.</p>
+ <label for="rs">Hasil simulasi</label><select id="rs"><option value="ok">Transfer berhasil</option><option value="pending">Status belum pasti</option></select></div>
+ <button class="p" id="go1">Selesaikan Verifikasi</button><button class="s" id="bk">Batal, kembali ke konfirmasi</button>`);
+ rs.value=st.result;
+ go1.onclick=()=>{st.result=rs.value;st.ref='TRF-'+String(Math.floor(Math.random()*1e10)).padStart(10,'0');
+  st.time=new Date().toLocaleString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  cur={ref:st.ref,name:st.name,bank:st.bank,acc:st.acc,amount:st.amount,fee:FEE(st.bank),note:st.note,time:st.time,status:st.result==='ok'?'Berhasil':'Diproses'};
+  HIST.unshift(cur);go('hasil')};
+ bk.onclick=()=>go('konfirmasi');
+}
+function hasil(){
+ if(cur.status==='Berhasil'){
+  el(`<div class="card"><h2 class="ok">Transfer Berhasil</h2><p>Dana telah dikirim ke <b>${cur.name}</b> sebesar <b>${rp(cur.amount)}</b>.</p><p class="note">No. referensi: ${cur.ref}</p></div>
+  <button class="p" id="a">Lihat Bukti Transaksi</button><button class="s" id="b">Kembali ke Beranda</button>`);
+  a.onclick=()=>go('bukti');b.onclick=()=>go('home');
+ }else{
+  el(`<div class="card"><h2 class="warn">Status Belum Pasti</h2><p>Transfer sebesar <b>${rp(cur.amount)}</b> ke <b>${cur.name}</b> masih diproses. Jangan ulangi transfer sebelum status diperiksa.</p><p class="note">No. referensi: ${cur.ref}</p><div id="msg" class="note"></div></div>
+  <button class="p" id="a">Periksa Status Transaksi</button><button class="s" id="b">Kembali ke Beranda</button>`);
+  let n=0;a.onclick=()=>{n++;if(n<2){msg.textContent='Transaksi masih diproses oleh bank. Mohon tunggu lalu periksa lagi.';a.textContent='Periksa Lagi'}else{cur.status='Berhasil';go('hasil')}};b.onclick=()=>go('home');
+ }
+}
+function bukti(){
+ el(`<h2>Bukti Transaksi</h2><div class="card">
+ <div class="row"><span>Status</span><b class="${cur.status==='Berhasil'?'ok':'warn'}">${cur.status==='Berhasil'?'Berhasil':'Sedang diproses'}</b></div>
+ <div class="row"><span>Penerima</span><b>${cur.name}</b></div><div class="row"><span>Rekening</span><b>${cur.acc}</b></div>
+ <div class="row"><span>Bank</span><b>${cur.bank}</b></div><div class="row"><span>Nominal</span><b>${rp(cur.amount)}</b></div>
+ <div class="row"><span>Biaya</span><b>${cur.fee?rp(cur.fee):'Gratis'}</b></div><div class="row"><span>Total</span><b>${rp(cur.amount+cur.fee)}</b></div>
+ <div class="row"><span>Keterangan</span><b>${cur.note||'-'}</b></div><div class="row"><span>Waktu</span><b>${cur.time}</b></div>
+ <div class="row"><span>No. referensi</span><b>${cur.ref}</b></div></div>
+ <p class="note">Bukti simulasi, bukan dokumen resmi.</p><button class="s" id="b">Kembali</button>`);
+ b.onclick=()=>go(page==='bukti'&&prev==='riwayat'?'riwayat':'home');
+}
+let prev='home';
+function riwayat(){
+ el(`<h2>Riwayat Transaksi</h2>`+(HIST.length?HIST.map((e,i)=>`<button class="hist card" data-i="${i}"><span><b>${e.name}</b><br><small>${e.time}</small></span><span style="text-align:right"><b>${rp(e.amount)}</b><br><small class="${e.status==='Berhasil'?'ok':'warn'}">${e.status==='Berhasil'?'Berhasil':'Sedang diproses'}</small></span></button>`).join(''):'<p>Belum ada transaksi.</p>')+`<button class="s" id="b">Kembali ke Beranda</button>`);
+ document.querySelectorAll('.hist').forEach(x=>x.onclick=()=>{cur=HIST[+x.dataset.i];prev='riwayat';go(cur.status==='Berhasil'?'bukti':'hasil')});
+ b.onclick=()=>go('home');
+}
+const _go=go;go=function(p){if(p!=='bukti'&&p!=='hasil')prev='home';_go(p)};
+render();
+</script>
+</body>
+</html>
